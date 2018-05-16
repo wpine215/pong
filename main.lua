@@ -15,6 +15,8 @@ PADDLE_SPEED = 200
 function love.load()
     love.graphics.setDefaultFilter('nearest', 'nearest')
 
+    love.window.setTitle('PONG')
+
     math.randomseed(os.time())
 
     smallFont = love.graphics.newFont('font.ttf', 8)
@@ -42,6 +44,46 @@ function love.load()
 end
 
 function love.update(dt)
+    if gameState == 'play' then
+        if ball:collides(player1) then
+            -- Reverse ball x-direction and speed it up
+            ball.dx = -ball.dx * 1.03
+            ball.x = player1.x + 5
+
+            -- Reverse ball y-direction and randomize it
+            if ball.dy < 0 then
+                ball.dy = -math.random(10, 150)
+            else
+                ball.dy = math.random(10,150)
+            end
+        end
+
+        if ball:collides(player2) then
+            -- Reverse ball x-direction and speed it up
+            ball.dx = -ball.dx * 1.03
+            ball.x = player2.x - 4
+
+            -- Reverse ball y-direction and randomize it
+            if ball.dy < 0 then
+                ball.dy = -math.random(10,150)
+            else
+                ball.dy = math.random(10,150)
+            end
+        end
+
+        -- Detect top screen collision
+        if ball.y <= 0 then
+            ball.y = 0
+            ball.dy = -ball.dy
+        end
+
+        -- Detect bottom screen collision, accounting for ball size
+        if ball.y >= VIRTUAL_HEIGHT - 4 then
+            ball.y = VIRTUAL_HEIGHT - 4
+            ball.dy = -ball.dy
+        end
+    end
+
     -- Handle player 1 movement
     if love.keyboard.isDown('w') then
         player1.dy = -PADDLE_SPEED
@@ -73,7 +115,7 @@ end
 function love.keypressed(key)
     if key == 'escape' then
         love.event.quit()
-    elseif key == 'enter' or key == 'return' then
+    elseif key == 'enter' or key == 'return' or key == 'space' then
         if gameState == 'start' then
             gameState = 'play'
         else
@@ -91,7 +133,7 @@ function love.draw()
 
     -- Draw welcome text
     love.graphics.setFont(smallFont)
-    love.graphics.printf('PONG', 0, 20, VIRTUAL_WIDTH,'center')
+    love.graphics.printf('PONG', 0, 10, VIRTUAL_WIDTH,'center')
 
     -- Draw score
     love.graphics.setFont(scoreFont)
@@ -107,5 +149,14 @@ function love.draw()
     -- Draw ball
     ball:render()
 
+    -- Display FPS counter
+    displayFPS()
+
     push:apply('end')
+end
+
+function displayFPS()
+    love.graphics.setFont(smallFont)
+    love.graphics.setColor(0,1,0,1)
+    love.graphics.print('FPS: ' .. tostring(love.timer.getFPS()), VIRTUAL_WIDTH - 40, 10)
 end

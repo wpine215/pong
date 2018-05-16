@@ -12,6 +12,21 @@ function Ball:init(x, y, width, height)
 	self.dy = math.random(-50, 50)
 end
 
+function Ball:collides(paddle)
+	-- Check to make sure left/right edges aren't touching/overlapping
+	if self.x > paddle.x + paddle.width or paddle.x > self.x + self.width then 
+		return false
+	end
+
+	-- Check to make sure top/bottom edges aren't touching/overlapping
+	if self.y > paddle.y + paddle.height or paddle.y > self.y + self.height then
+		return false
+	end
+
+	-- Ball and paddle are colliding
+	return true
+end
+
 function Ball:reset()
 	-- Reset the ball's position and velocity
 	self.x = VIRTUAL_WIDTH / 2 - 2
