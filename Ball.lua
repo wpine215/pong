@@ -29,11 +29,11 @@ end
 
 function Ball:reset()
 	-- Reset the ball's position and velocity
-	self.x = VIRTUAL_WIDTH / 2 - 2
-	self.y = VIRTUAL_HEIGHT / 2 - 2
+	self.x = (VIRTUAL_WIDTH / 2) - (BALL_SIZE / 2)
+	self.y = (VIRTUAL_HEIGHT / 2) - (BALL_SIZE / 2)
 
-	self.dx = math.random(2) == 1 and -100 or 100
-	self.dy = math.random(-50, 50)
+	self.dx = math.random(2) == 1 and -450 or 450
+	self.dy = math.random(BALL_DY_SERVE_MIN, BALL_DY_SERVE_MAX)
 	
 end
 

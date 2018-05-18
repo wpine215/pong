@@ -1,4 +1,3 @@
-push = require 'push'
 Class = require 'class'
 local moonshine = require 'moonshine'
 
@@ -6,40 +5,26 @@ require 'Ball'
 require 'Paddle'
 require 'dashedLine'
 
--- WINDOW_WIDTH = 1280
--- WINDOW_HEIGHT = 720
+WINDOW_WIDTH = 1920
+WINDOW_HEIGHT = 1080
 
-WINDOW_WIDTH = 432
-WINDOW_HEIGHT = 243
-
-VIRTUAL_HEIGHT = WINDOW_HEIGHT
 VIRTUAL_WIDTH = WINDOW_WIDTH
-
---VIRTUAL_WIDTH = 432
---VIRTUAL_HEIGHT = 243
-
-
---[[------------VARIABLES FOR 1920x1080-----------------------
-WINDOW_WIDTH = VIRTUAL_WIDTH = 1920
-WINDOW_HEIGHT = VIRTUAL_HEIGHT = 1080
-
-PADDLE_SPEED = 900
+VIRTUAL_HEIGHT = WINDOW_HEIGHT
 
 BALL_SIZE = 18
 PADDLE_WIDTH = 25
-PADDLE_HEIGHT = 90
+PADDLE_HEIGHT = 100
 
-smallFont = love.graphics.newFont('font.ttf', 36)
-largeFont = love.graphics.newFont('font.ttf', 72)
-scoreFont = love.graphics.newFont('font.ttf', 144)
+BALL_DY_SERVE_MIN = -225
+BALL_DY_SERVE_MAX = 225
 
-player1 = Paddle(45, 135, PADDLE_WIDTH, PADDLE_HEIGHT)
-player2 = Paddle(VIRTUAL_WIDTH - 45, VIRTUAL_HEIGHT - 135, PADDLE_WIDTH, PADDLE_HEIGHT)
+BALL_DY_MIN = 45
+BALL_DY_MAX = 675
 
-ball = Ball((VIRTUAL_WIDTH / 2) - (BALL_SIZE / 2), (VIRTUAL_HEIGHT / 2) - (BALL_SIZE / 2), BALL_SIZE, BALL_SIZE)
+BALL_DX_MIN = 630
+BALL_DX_MAX = 900
 
-]]
-PADDLE_SPEED = 200
+PADDLE_SPEED = 750
 
 function love.load()
     --love.graphics.setDefaultFilter('nearest', 'nearest')
@@ -48,22 +33,15 @@ function love.load()
 
     math.randomseed(os.time())
 
-    smallFont = love.graphics.newFont('font.ttf', 8)
-    largeFont = love.graphics.newFont('font.ttf', 16)
-    scoreFont = love.graphics.newFont('font.ttf', 32)
+    smallFont = love.graphics.newFont('font.ttf', 36)
+    largeFont = love.graphics.newFont('font.ttf', 72)
+    scoreFont = love.graphics.newFont('font.ttf', 144)
     love.graphics.setFont(smallFont)
 
-    --[[
-    push:setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, {
-        fullscreen = false,
+    love.window.setMode(WINDOW_WIDTH, WINDOW_HEIGHT, {
+        fullscreen = true,
         resizable = false,
         vsync = true
-    }) ]]
-
-    love.window.setMode(WINDOW_WIDTH, WINDOW_HEIGHT, {
-        fullscreen = false,
-        resizable = false,
-        vsync = false
     })
 
     -- Initialize score variables
@@ -74,51 +52,51 @@ function love.load()
     servingPlayer = 1
 
     -- Call paddle and ball constructors
-    player1 = Paddle(10, 30, 5, 20)
-    player2 = Paddle(VIRTUAL_WIDTH - 10, VIRTUAL_HEIGHT - 30, 5, 20)
+    player1 = Paddle(45, 135, PADDLE_WIDTH, PADDLE_HEIGHT)
+    player2 = Paddle(VIRTUAL_WIDTH - 45, VIRTUAL_HEIGHT - 135, PADDLE_WIDTH, PADDLE_HEIGHT)
 
-    ball = Ball(VIRTUAL_WIDTH / 2 - 2, VIRTUAL_HEIGHT / 2 - 2, 4, 4)
+    ball = Ball((VIRTUAL_WIDTH / 2) - (BALL_SIZE / 2), (VIRTUAL_HEIGHT / 2) - (BALL_SIZE / 2), BALL_SIZE, BALL_SIZE)
 
     -- Load effects
-    effect = moonshine(moonshine.effects.scanlines).chain(moonshine.effects.crt)
-    --effect = moonshine(moonshine.effects.crt).chain(moonshine.effects.scanlines)
-    -- effect.crt.distortionFactor = {1.05, 1.05}
+    --effect = moonshine(moonshine.effects.scanlines).chain(moonshine.effects.crt)
+    effect = moonshine(moonshine.effects.crt).chain(moonshine.effects.scanlines)
+
     -- Initialize game state
     gameState = 'start'
 end
 
 function love.update(dt)
     if gameState == 'serve' then
-        ball.dy = math.random(-50, 50)
+        ball.dy = math.random(BALL_DY_SERVE_MIN, BALL_DY_SERVE_MAX)
         if servingPlayer == 1 then
-            ball.dx = math.random(140, 200)
+            ball.dx = math.random(BALL_DX_MIN, BALL_DX_MAX)
         else
-            ball.dx = -math.random(140, 200)
+            ball.dx = -math.random(BALL_DX_MIN, BALL_DX_MAX)
         end
     elseif gameState == 'play' then
         if ball:collides(player1) then
             -- Reverse ball x-direction and speed it up
             ball.dx = -ball.dx * 1.03
-            ball.x = player1.x + 5
+            ball.x = player1.x + PADDLE_WIDTH
 
             -- Reverse ball y-direction and randomize it
             if ball.dy < 0 then
-                ball.dy = -math.random(10, 150)
+                ball.dy = -math.random(BALL_DY_MIN, BALL_DY_MAX)
             else
-                ball.dy = math.random(10,150)
+                ball.dy = math.random(BALL_DY_MIN, BALL_DY_MAX)
             end
         end
 
         if ball:collides(player2) then
             -- Reverse ball x-direction and speed it up
             ball.dx = -ball.dx * 1.03
-            ball.x = player2.x - 4
+            ball.x = player2.x - BALL_SIZE
 
             -- Reverse ball y-direction and randomize it
             if ball.dy < 0 then
-                ball.dy = -math.random(10,150)
+                ball.dy = -math.random(BALL_DY_MIN, BALL_DY_MAX)
             else
-                ball.dy = math.random(10,150)
+                ball.dy = math.random(BALL_DY_MIN, BALL_DY_MAX)
             end
         end
 
@@ -129,13 +107,13 @@ function love.update(dt)
         end
 
         -- Detect bottom screen collision, accounting for ball size
-        if ball.y >= VIRTUAL_HEIGHT - 4 then
-            ball.y = VIRTUAL_HEIGHT - 4
+        if ball.y >= VIRTUAL_HEIGHT - BALL_SIZE then
+            ball.y = VIRTUAL_HEIGHT - BALL_SIZE
             ball.dy = -ball.dy
         end
 
         -- Detect left screen collision for scoring
-        if ball.x < -3 then
+        if ball.x < -BALL_SIZE + 1 then
             servingPlayer = 1
             player2score = player2score + 1
             ball:reset()
@@ -192,16 +170,16 @@ function love.keypressed(key)
 end
 
 function love.draw()
-    -- push:apply('start')
+    
+    effect(function()
 
     -- Set background color
-    effect(function()
     love.graphics.clear(0.16, 0.18, 0.2, 1)
  
     displayScore()
 
-    -- dashedLine(VIRTUAL_WIDTH / 2, 0, VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT + 4, 4, 8)
     love.graphics.setColor(0,1,0,1)
+    -- TODO: Dashed line dimensions must be updated
     dashedLine(VIRTUAL_WIDTH / 2, 0, VIRTUAL_WIDTH / 2, 4, 4, 8)
     dashedLine(VIRTUAL_WIDTH / 2, 32, VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT + 8, 4, 8)
     love.graphics.setColor(1,1,1,1)
@@ -209,15 +187,15 @@ function love.draw()
     -- Draw text
     if gameState == 'start' then
         love.graphics.setFont(smallFont)
-        love.graphics.printf('Welcome to PONG', 0, 10, VIRTUAL_WIDTH,'center')
-        love.graphics.printf('Press space to play', 0, 20, VIRTUAL_WIDTH,'center')
+        love.graphics.printf('Welcome to PONG', 0, 40, VIRTUAL_WIDTH,'center')
+        love.graphics.printf('Press space to play', 0, 80, VIRTUAL_WIDTH,'center')
     elseif gameState == 'serve' then
         love.graphics.setFont(smallFont)
-        love.graphics.printf('Player ' .. servingPlayer .. ' is serving', 0, 10, VIRTUAL_WIDTH,'center')
-        love.graphics.printf('Press space to serve!', 0, 20, VIRTUAL_WIDTH,'center')
+        love.graphics.printf('Player ' .. servingPlayer .. ' is serving', 0, 40, VIRTUAL_WIDTH,'center')
+        love.graphics.printf('Press space to serve!', 0, 80, VIRTUAL_WIDTH,'center')
     elseif gameState == 'play' then
         love.graphics.setFont(largeFont)
-        love.graphics.printf('PONG', 0, 10, VIRTUAL_WIDTH, 'center')
+        love.graphics.printf('PONG', 0, 40, VIRTUAL_WIDTH, 'center')
     end
 
     -- Draw left and right paddles
@@ -231,20 +209,18 @@ function love.draw()
     displayFPS()
 
     end)
-
-    --push:apply('end')
 end
 
 function displayScore()
     love.graphics.setFont(scoreFont)
-    love.graphics.print(tostring(player1score), VIRTUAL_WIDTH / 2 - 50,
+    love.graphics.print(tostring(player1score), VIRTUAL_WIDTH / 2 - 200,
         VIRTUAL_HEIGHT / 3)
-    love.graphics.print(tostring(player2score), VIRTUAL_WIDTH / 2 + 30,
+    love.graphics.print(tostring(player2score), VIRTUAL_WIDTH / 2 + 140,
         VIRTUAL_HEIGHT / 3)
 end
 
 function displayFPS()
     love.graphics.setFont(smallFont)
     love.graphics.setColor(0,1,0,1)
-    love.graphics.print('FPS: ' .. tostring(love.timer.getFPS()), VIRTUAL_WIDTH - 40, 10)
+    love.graphics.print('FPS: ' .. tostring(love.timer.getFPS()), VIRTUAL_WIDTH - 180, 45)
 end
