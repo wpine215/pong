@@ -53,12 +53,11 @@ function love.load()
 
     -- Call paddle and ball constructors
     player1 = Paddle(45, 135, PADDLE_WIDTH, PADDLE_HEIGHT)
-    player2 = Paddle(VIRTUAL_WIDTH - 45, VIRTUAL_HEIGHT - 135, PADDLE_WIDTH, PADDLE_HEIGHT)
+    player2 = Paddle(VIRTUAL_WIDTH - PADDLE_WIDTH - 45, VIRTUAL_HEIGHT - 135 - PADDLE_HEIGHT, PADDLE_WIDTH, PADDLE_HEIGHT)
 
     ball = Ball((VIRTUAL_WIDTH / 2) - (BALL_SIZE / 2), (VIRTUAL_HEIGHT / 2) - (BALL_SIZE / 2), BALL_SIZE, BALL_SIZE)
 
     -- Load effects
-    --effect = moonshine(moonshine.effects.scanlines).chain(moonshine.effects.crt)
     effect = moonshine(moonshine.effects.crt).chain(moonshine.effects.scanlines)
 
     -- Initialize game state
@@ -179,9 +178,9 @@ function love.draw()
     displayScore()
 
     love.graphics.setColor(0,1,0,1)
-    -- TODO: Dashed line dimensions must be updated
-    dashedLine(VIRTUAL_WIDTH / 2, 0, VIRTUAL_WIDTH / 2, 4, 4, 8)
-    dashedLine(VIRTUAL_WIDTH / 2, 32, VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT + 8, 4, 8)
+    love.graphics.setLineWidth(4)
+    dashedLine(VIRTUAL_WIDTH / 2, 0, VIRTUAL_WIDTH / 2, 20, 20, 40)
+    dashedLine(VIRTUAL_WIDTH / 2, 130, VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT + 20, 20, 40)
     love.graphics.setColor(1,1,1,1)
 
     -- Draw text
@@ -214,9 +213,9 @@ end
 function displayScore()
     love.graphics.setFont(scoreFont)
     love.graphics.print(tostring(player1score), VIRTUAL_WIDTH / 2 - 200,
-        VIRTUAL_HEIGHT / 3)
+        VIRTUAL_HEIGHT / 6)
     love.graphics.print(tostring(player2score), VIRTUAL_WIDTH / 2 + 140,
-        VIRTUAL_HEIGHT / 3)
+        VIRTUAL_HEIGHT / 6)
 end
 
 function displayFPS()
