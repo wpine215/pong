@@ -40,6 +40,12 @@ function love.load()
     scoreFont = love.graphics.newFont('font.ttf', 144)
     love.graphics.setFont(smallFont)
 
+    sounds = {
+        ['paddle_hit'] = love.audio.newSource('sounds/paddle_hit.wav', 'static'),
+        ['score'] = love.audio.newSource('sounds/score.wav', 'static'),
+        ['wall_hit'] = love.audio.newSource('sounds/wall_hit.wav', 'static')
+    }
+
     love.window.setMode(WINDOW_WIDTH, WINDOW_HEIGHT, {
         fullscreen = true,
         resizable = false,
@@ -86,6 +92,8 @@ function love.update(dt)
             else
                 ball.dy = math.random(BALL_DY_MIN, BALL_DY_MAX)
             end
+
+            sounds['paddle_hit']:play()
         end
 
         if ball:collides(player2) then
@@ -99,24 +107,31 @@ function love.update(dt)
             else
                 ball.dy = math.random(BALL_DY_MIN, BALL_DY_MAX)
             end
+
+            sounds['paddle_hit']:play()
         end
 
         -- Detect top screen collision
         if ball.y <= 0 then
             ball.y = 0
             ball.dy = -ball.dy
+
+            sounds['wall_hit']:play()
         end
 
         -- Detect bottom screen collision, accounting for ball size
         if ball.y >= VIRTUAL_HEIGHT - BALL_SIZE then
             ball.y = VIRTUAL_HEIGHT - BALL_SIZE
             ball.dy = -ball.dy
+
+            sounds['wall_hit']:play()
         end
 
         -- Detect left screen collision for scoring
         if ball.x < -BALL_SIZE + 1 then
             servingPlayer = 1
             player2score = player2score + 1
+            sounds['score']:play()
 
             if player2score == POINTS_TO_WIN then
                 winningPlayer = 2
@@ -131,6 +146,7 @@ function love.update(dt)
         if ball.x > VIRTUAL_WIDTH then
             servingPlayer = 2
             player1score = player1score + 1
+            sounds['score']:play()
 
             if player1score == POINTS_TO_WIN then
                 winningPlayer = 1
