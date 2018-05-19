@@ -25,6 +25,7 @@ BALL_DX_MIN = 630
 BALL_DX_MAX = 900
 
 PADDLE_SPEED = 850
+POINTS_TO_WIN = 10
 
 function love.load()
     --love.graphics.setDefaultFilter('nearest', 'nearest')
@@ -116,16 +117,28 @@ function love.update(dt)
         if ball.x < -BALL_SIZE + 1 then
             servingPlayer = 1
             player2score = player2score + 1
-            ball:reset()
-            gameState = 'serve'
+
+            if player2score == POINTS_TO_WIN then
+                winningPlayer = 2
+                gameState = 'done'
+            else
+                gameState = 'serve'
+                ball:reset()
+            end
         end
 
         -- Detect right screen collision for scoring
         if ball.x > VIRTUAL_WIDTH then
             servingPlayer = 2
             player1score = player1score + 1
-            ball:reset()
-            gameState = 'serve'
+
+            if player1score == POINTS_TO_WIN then
+                winningPlayer = 1
+                gameState = 'done'
+            else
+                gameState = 'serve'
+                ball:reset()
+            end
         end
     end
 
@@ -165,6 +178,19 @@ function love.keypressed(key)
             gameState = 'serve'
         elseif gameState == 'serve' then
             gameState = 'play'
+        elseif gameState == 'done' then
+            -- Reset the game
+            gameState = 'serve'
+            ball:reset()
+            player1score = 0
+            player2score = 0
+
+            -- Give the loser the next serve
+            if winningPlayer == 1 then
+                servingPlayer = 2
+            else
+                servingPlayer = 1
+            end
         end
     end
 end
@@ -196,6 +222,9 @@ function love.draw()
     elseif gameState == 'play' then
         love.graphics.setFont(largeFont)
         love.graphics.printf('PONG', 0, 40, VIRTUAL_WIDTH, 'center')
+    elseif gameState == 'done' then
+        love.graphics.setFont(largeFont)
+        love.graphics.printf('PLAYER ' .. tostring(winningPlayer) .. ' WINS!', 0, 40, VIRTUAL_WIDTH, 'center')
     end
 
     -- Draw left and right paddles
@@ -215,7 +244,7 @@ function displayScore()
     love.graphics.setFont(scoreFont)
     love.graphics.print(tostring(player1score), VIRTUAL_WIDTH / 2 - 200,
         VIRTUAL_HEIGHT / 6)
-    love.graphics.print(tostring(player2score), VIRTUAL_WIDTH / 2 + 140,
+    love.graphics.print(tostring(player2score), VIRTUAL_WIDTH / 2 + 120,
         VIRTUAL_HEIGHT / 6)
 end
 
