@@ -24,7 +24,7 @@ BALL_DY_MAX = 675
 BALL_DX_MIN = 630
 BALL_DX_MAX = 900
 
-PADDLE_SPEED = 750
+PADDLE_SPEED = 850
 
 function love.load()
     --love.graphics.setDefaultFilter('nearest', 'nearest')
