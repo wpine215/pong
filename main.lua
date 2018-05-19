@@ -30,6 +30,7 @@ function love.load()
     --love.graphics.setDefaultFilter('nearest', 'nearest')
 
     love.window.setTitle('PONG')
+    love.mouse.setVisible(false)
 
     math.randomseed(os.time())
 
